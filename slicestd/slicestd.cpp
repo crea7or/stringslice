@@ -9,32 +9,31 @@
 template < typename _inputIterator, typename _unaryFuntion >
 void each_tag( _inputIterator _from, _inputIterator _to, typename _inputIterator::value_type _delimiter, _unaryFuntion _function )
 {
-	std::basic_string<typename _inputIterator::value_type> tag;
+	_inputIterator _first = _from, _cur = _from;
 	for ( ; _from != _to; ++_from )
 	{
-		if ( *_from != _delimiter )
+		if ( *_from == _delimiter )
 		{
-			tag.push_back( *_from );
+			if ( _first != _cur )
+			{
+				_function( std::basic_string<typename _inputIterator::value_type>( _first, _cur ));
+			}
+			_first = ++_cur;
 		}
 		else
 		{
-			if ( tag.size() > 0 )
-			{
-				_function( tag );
-			}
-			tag.clear();
+			++_cur;
 		}
 	}
-	if ( tag.size() > 0 )
+	if ( _first != _cur )
 	{
-		_function( tag );
+		_function( std::basic_string<typename _inputIterator::value_type>( _first, _cur ));
 	}
 }
 
-template < typename _inputIterator, typename _outputIterator, typename _delimiterType >
-void each_tag_push( _inputIterator _from, _inputIterator _to, _delimiterType _delimiter, _outputIterator _output )
+template < typename _inputIterator, typename _outputIterator>
+void each_tag_push( _inputIterator _from, _inputIterator _to, typename _inputIterator::value_type _delimiter, _outputIterator _output )
 {
-	//std::static_assert( std::is_same< typename _inputIterator::value_type, _delimiterType >::value );
 	_inputIterator _first = _from, _cur = _from;
 	for ( ; _from != _to; ++_from )
 	{
@@ -57,10 +56,92 @@ void each_tag_push( _inputIterator _from, _inputIterator _to, _delimiterType _de
 	}
 }
 
+
+// in process
+
+template < typename _inputIterator, typename _unaryFuntion >
+void each_tag( _inputIterator _from, _inputIterator _to, const std::basic_string<typename _inputIterator::value_type> _delimiter, _unaryFuntion _function )
+{
+	//std::basic_string<typename _inputIterator::value_type> tag;
+	//std::basic_string<typename _inputIterator::value_type> searchFor( _delimiter );
+
+	size_t sizeCurrent = 0;
+	size_t stringSize = _delimiter.size();
+//	while ( _delimiter[ stringSize ] != 0 )
+//	{
+//		++stringSize;
+//	};
+
+	_inputIterator _first = _from, _cur = _from;
+
+	for ( ; _from != _to; ++_from )
+	{
+		if ( *_from == _delimiter[ sizeCurrent ] )
+		{
+			tag.push_back( *_from );
+		}
+		else
+		{
+
+			if ( tag.size() > 0 )
+			{
+				_function( tag );
+			}
+			tag.clear();
+			sizeCurrent = 0;
+		}
+	}
+	if ( tag.size() > 0 )
+	{
+		_function( tag );
+	}
+}
+
+template < typename _inputIterator, typename _unaryFuntion >
+void each_tag( _inputIterator _from, _inputIterator _to, const typename _inputIterator::value_type* _delimiter, _unaryFuntion _function )
+{
+	std::basic_string<typename _inputIterator::value_type> tag;
+	//std::basic_string<typename _inputIterator::value_type> searchFor( _delimiter );
+
+	size_t sizeCurrent = 0, stringSize = 0;
+	while ( _delimiter[ stringSize ] != 0 )
+	{
+		++stringSize;
+	};
+
+	_inputIterator _first = _from, _cur = _from;
+
+	for ( ; _from != _to; ++_from )
+	{
+		if ( *_from == _delimiter[ sizeCurrent ] )
+		{
+			tag.push_back( *_from );
+		}
+		else
+		{
+
+			if ( tag.size() > 0 )
+			{
+				_function( tag );
+			}
+			tag.clear();
+			sizeCurrent = 0;
+		}
+	}
+	if ( tag.size() > 0 )
+	{
+		_function( tag );
+	}
+}
+
+
+
 int main(int argc, char* argv[])
 {
-	std::string test( " 498924782h7 nuncinsiunc 77826376276572  736736473467 sdfsdfw344224 d" );
-	std::wstring wtest( L" 498924782h7 nuncinsiunc 77826376276572  736736473467 fefsdf22234 " );
+	std::string test( " 498924782h7 nuncinsiunuc 77826376276572  nu736736473467 sdfsdfw344224 d" );
+	std::wstring wtest( L" 498nu924782h7 nuncinsiunc 778263762765nu72  73673nuu6473467 fefsdf22234 " );
+
+#pragma region single char slices
 
 	size_t count = 0;
 	std::cout << "char:" << std::endl;
@@ -103,13 +184,18 @@ int main(int argc, char* argv[])
 		std::wcout << tag << std::endl;
 	} );
 	std::cout << "total tags: " << wslices.size() << std::endl;
+#pragma endregion
 
-
-
-
-
-
-
+	/*
+	size_t mcount = 0;
+	std::cout << "char:" << std::endl;
+	each_tag( test.begin(), test.end(), "nu", [ &mcount ]( std::string& tag )
+	{
+		std::cout << tag << std::endl;
+		++mcount;
+	} );
+	std::cout << "total tags: " << count << std::endl;
+	*/
 	return 0;
 }
 
