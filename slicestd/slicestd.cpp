@@ -7,7 +7,7 @@
 template < typename _containerType >
 struct back_insert_functor
 {
-	back_insert_functor( _containerType& _conttype ) : _cont{ _conttype } {};
+	explicit back_insert_functor( _containerType& _conttype ) : _cont{ _conttype } {};
 	void operator()( typename _containerType::value_type _item ) const
 	{
 		_cont.push_back( _item );
@@ -150,7 +150,6 @@ int main(int argc, char* argv[])
 
 #pragma region single char slices
 
-
 	std::cout << std::endl << "char (' '):" << std::endl;
 	each_slice( test.begin(), test.end(), ' ', [&count]( const std::string& tag )
 	{
@@ -190,7 +189,6 @@ int main(int argc, char* argv[])
 	} );
 	std::cout << "total tags: " << wslices.size() << std::endl;
 #pragma endregion
-
 
 #pragma region multi chars slices
 
