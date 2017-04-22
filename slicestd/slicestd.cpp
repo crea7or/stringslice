@@ -31,6 +31,61 @@ void each_slice_push( _inputIterator _begin, _inputIterator _end, typename _inpu
 	}
 }
 
+template < typename _inputIterator, typename _outputIterator >
+void each_slice_push( _inputIterator _begin, _inputIterator _end, typename _inputIterator::value_type* _delimiter, _outputIterator _output )
+{
+	size_t indexCurrent = 0, stringSize = 0;
+	while ( _delimiter[ stringSize ] != 0 )
+	{
+		++stringSize;
+	};
+
+	if ( stringSize > 1 )
+	{
+		--stringSize;
+		_inputIterator _first = _begin, _final = _begin, _last, _fromPattern;
+		for ( ; _begin != _end; ++_begin )
+		{
+			if ( *_begin == _delimiter[ indexCurrent ] )
+			{
+				_last = _fromPattern = _begin;
+				while ( ++_fromPattern != _end && *_fromPattern == _delimiter[ ++indexCurrent ] )
+				{
+					if ( indexCurrent == stringSize )
+					{
+						if ( _first != _last )
+						{
+							_output = std::basic_string<typename _inputIterator::value_type>( _first, _last );
+						}
+						_begin = _fromPattern++;
+						_final = _first = _fromPattern;
+						break;
+					}
+				};
+				indexCurrent = 0;
+			}
+		}
+
+		// last slice
+		if ( _final != _end )
+		{
+			_output = std::basic_string<typename _inputIterator::value_type>( _final, _end );
+		}
+	}
+	else if ( stringSize == 1 )
+	{
+		// only one symbol in delimiter, use simplier variant
+		each_slice_push( _begin, _end, _delimiter[ 0 ], _output );
+	}
+	/*
+	else
+	{
+	// only one slice, no delimiters supplied
+	_function( std::basic_string<typename _inputIterator::value_type>( _begin, _end ));
+	}
+	*/
+}
+
 template < typename _inputIterator, typename _unaryFunction >
 void each_slice( _inputIterator _begin, _inputIterator _end, typename _inputIterator::value_type _delimiter, _unaryFunction _function )
 {
@@ -195,6 +250,17 @@ int main(int argc, char* argv[])
 		++count;
 	} );
 	std::cout << "total tags: " << count << std::endl;
+
+	std::cout << std::endl << "multi char push (source):" << std::endl;
+	std::vector< std::string > mslices;
+	std::back_insert_iterator<std::vector< std::string >> moutput( mslices );
+	each_slice_push( test.begin(), test.end(), "source", moutput );
+
+	for_each( mslices.begin(), mslices.end(), []( std::string& tag )
+	{
+		std::cout << tag << std::endl;
+	} );
+	std::cout << "total tags: " << mslices.size() << std::endl;
 
 #pragma endregion
 
