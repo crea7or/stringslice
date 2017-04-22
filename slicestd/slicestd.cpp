@@ -166,6 +166,48 @@ void each_slice( _inputIterator _begin, _inputIterator _end, typename _inputIter
 	*/
 }
 
+template < typename _inputIterator, typename _unaryFunction >
+void any_slice( _inputIterator _begin, _inputIterator _end, typename _inputIterator::value_type* _delimiter, _unaryFunction _function )
+{
+	size_t indexCurrent = 0, stringSize = 0;
+	while ( _delimiter[ stringSize ] != 0 )
+	{
+		++stringSize;
+	};
+
+	if ( stringSize > 0 )
+	{
+		_inputIterator _first = _begin, _cur = _begin;
+		for ( ; _begin != _end; ++_begin )
+		{
+			for ( indexCurrent = 0; indexCurrent < stringSize; ++indexCurrent )
+			{
+				if ( *_begin == _delimiter[ indexCurrent ] )
+				{
+					break;
+				}
+			}
+			if ( indexCurrent != stringSize )
+			{
+				if ( _first != _cur )
+				{
+					_function( std::basic_string<typename _inputIterator::value_type>( _first, _cur ) );
+				}
+				_first = ++_cur;
+			}
+			else
+			{
+				++_cur;
+			}
+		}
+		if ( _first != _cur )
+		{
+			_function( std::basic_string<typename _inputIterator::value_type>( _first, _cur ) );
+		}
+	}
+}
+
+
 
 int main(int argc, char* argv[])
 {
@@ -263,6 +305,17 @@ int main(int argc, char* argv[])
 	std::cout << "total tags: " << mslices.size() << std::endl;
 
 #pragma endregion
+
+
+	count = 0;
+	std::cout << std::endl << "any slice (c or _):" << std::endl;
+	any_slice( test.begin(), test.end(), "c_", [ &count ]( std::string& tag )
+	{
+		std::cout << tag << std::endl;
+		++count;
+	} );
+	std::cout << "total tags: " << count << std::endl;
+
 
 	return 0;
 }
