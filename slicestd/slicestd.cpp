@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #include <iostream>
 #include <string>
 #include <vector>
@@ -87,7 +85,7 @@ void each_slice_push( _inputIterator _begin, _inputIterator _end, typename _inpu
 }
 
 template < typename _inputIterator, typename _unaryFunction >
-void each_slice( _inputIterator _begin, _inputIterator _end, typename _inputIterator::value_type _delimiter, _unaryFunction _function )
+void each_slice( _inputIterator _begin, _inputIterator _end, typename _inputIterator::value_type _delimiter, const _unaryFunction& _function )
 {
 	_inputIterator _first = _begin, _cur = _begin;
 	for ( ; _begin != _end; ++_begin )
@@ -112,7 +110,7 @@ void each_slice( _inputIterator _begin, _inputIterator _end, typename _inputIter
 }
 
 template < typename _inputIterator, typename _unaryFunction >
-void each_slice( _inputIterator _begin, _inputIterator _end, typename _inputIterator::value_type* _delimiter, _unaryFunction _function )
+void each_slice( _inputIterator _begin, _inputIterator _end, typename _inputIterator::value_type* _delimiter, const _unaryFunction& _function )
 {
 	size_t indexCurrent = 0, stringSize = 0;
 	while ( _delimiter[ stringSize ] != 0 )
@@ -167,7 +165,7 @@ void each_slice( _inputIterator _begin, _inputIterator _end, typename _inputIter
 }
 
 template < typename _inputIterator, typename _unaryFunction >
-void any_slice( _inputIterator _begin, _inputIterator _end, typename _inputIterator::value_type* _delimiter, _unaryFunction _function )
+void any_slice( _inputIterator _begin, _inputIterator _end, typename _inputIterator::value_type* _delimiter, const _unaryFunction& _function )
 {
 	size_t indexCurrent = 0, stringSize = 0;
 	while ( _delimiter[ stringSize ] != 0 )
@@ -208,7 +206,6 @@ void any_slice( _inputIterator _begin, _inputIterator _end, typename _inputItera
 }
 
 
-
 int main(int argc, char* argv[])
 {
 	std::string test( "cpp.kw1 source.cpp.kw2 source.cpp.kw3 sourcesource.cpp.kw4_source.cpp.co1 source.cpp.co2 source.cpp source.cpp.es0 source" );
@@ -220,7 +217,7 @@ int main(int argc, char* argv[])
 
 
 	std::cout << std::endl << "char (' '):" << std::endl;
-	each_slice( test.begin(), test.end(), ' ', [&count]( std::string& tag )
+	each_slice( test.begin(), test.end(), ' ', [&count]( const std::string& tag )
 	{
 		std::cout << tag << std::endl;
 		++count;
@@ -233,7 +230,7 @@ int main(int argc, char* argv[])
 	std::back_insert_iterator<std::vector< std::string >>  output( slices );
 	each_slice_push( test.begin(), test.end(), ' ', output ); // <- char to wchar implict convertsion is possible
 
-	for_each( slices.begin(), slices.end(), []( std::string& tag )
+	for_each( slices.begin(), slices.end(), []( const std::string& tag )
 	{
 		std::cout << tag << std::endl;
 	} );
@@ -242,7 +239,7 @@ int main(int argc, char* argv[])
 
 	count = 0;
 	std::cout << std::endl << std::endl << "wchar (' '):" << std::endl;
-	each_slice( wtest.begin(), wtest.end(), ' ', [ &count ]( std::wstring& tag )
+	each_slice( wtest.begin(), wtest.end(), ' ', [ &count ]( const std::wstring& tag )
 	{
 		std::wcout << tag << std::endl;
 		++count;
@@ -254,7 +251,7 @@ int main(int argc, char* argv[])
 	std::back_insert_iterator<std::vector< std::wstring >> woutput( wslices );
 	each_slice_push( wtest.begin(), wtest.end(), L' ', woutput );
 
-	for_each( wslices.begin(), wslices.end(), []( std::wstring& tag )
+	for_each( wslices.begin(), wslices.end(), []( const std::wstring& tag )
 	{
 		std::wcout << tag << std::endl;
 	} );
@@ -266,7 +263,7 @@ int main(int argc, char* argv[])
 
 	count = 0;
 	std::cout << std::endl << "multi char 1 (cpp):" << std::endl;
-	each_slice( test.begin(), test.end(), "cpp", [ &count ]( std::string& tag )
+	each_slice( test.begin(), test.end(), "cpp", [ &count ]( const std::string& tag )
 	{
 		std::cout << tag << std::endl;
 		++count;
@@ -276,7 +273,7 @@ int main(int argc, char* argv[])
 
 	count = 0;
 	std::cout << std::endl << "multi char 2 (source):" << std::endl;
-	each_slice( test.begin(), test.end(), "source", [ &count ]( std::string& tag )
+	each_slice( test.begin(), test.end(), "source", [ &count ]( const std::string& tag )
 	{
 		std::cout << tag << std::endl;
 		++count;
@@ -286,7 +283,7 @@ int main(int argc, char* argv[])
 
 	count = 0;
 	std::cout << std::endl << "multi char as one (' '):" << std::endl;
-	each_slice( test.begin(), test.end(), " ", [ &count ]( std::string& tag )
+	each_slice( test.begin(), test.end(), " ", [ &count ]( const std::string& tag )
 	{
 		std::cout << tag << std::endl;
 		++count;
@@ -306,16 +303,18 @@ int main(int argc, char* argv[])
 
 #pragma endregion
 
+#pragma region any_slice test
 
 	count = 0;
 	std::cout << std::endl << "any slice (c or _):" << std::endl;
-	any_slice( test.begin(), test.end(), "c_", [ &count ]( std::string& tag )
+	any_slice( test.begin(), test.end(), "c_", [ &count ]( const std::string& tag )
 	{
 		std::cout << tag << std::endl;
 		++count;
 	} );
 	std::cout << "total tags: " << count << std::endl;
 
+#pragma endregion
 
 	return 0;
 }
