@@ -4,6 +4,7 @@
 #include <iterator>
 #include <algorithm>
 
+// Wrap pushes to container in a manner of functor
 template < typename _containerType >
 struct back_insert_functor
 {
@@ -19,6 +20,7 @@ private:
 
 };
 
+// Slice string with one delimiter char(wchar...)
 template < typename _inputIterator, typename _unaryFunction >
 void each_slice( _inputIterator _begin, _inputIterator _end, typename _inputIterator::value_type _delimiter, const _unaryFunction& _function )
 {
@@ -44,6 +46,7 @@ void each_slice( _inputIterator _begin, _inputIterator _end, typename _inputIter
 	}
 }
 
+// Slice string with char*(wchar*...) delimiter
 template < typename _inputIterator, typename _unaryFunction >
 void each_slice( _inputIterator _begin, _inputIterator _end, typename _inputIterator::value_type* _delimiter, const _unaryFunction& _function )
 {
@@ -99,6 +102,7 @@ void each_slice( _inputIterator _begin, _inputIterator _end, typename _inputIter
 	*/
 }
 
+// Slice string with any of delimiters in char*(wchar*...)
 template < typename _inputIterator, typename _unaryFunction >
 void any_slice( _inputIterator _begin, _inputIterator _end, typename _inputIterator::value_type* _delimiter, const _unaryFunction& _function )
 {
