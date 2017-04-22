@@ -4,85 +4,20 @@
 #include <iterator>
 #include <algorithm>
 
-template < typename _inputIterator, typename _outputIterator>
-void each_slice_push( _inputIterator _begin, _inputIterator _end, typename _inputIterator::value_type _delimiter, _outputIterator _output )
+template < typename _containerType >
+struct back_insert_functor
 {
-	_inputIterator _first = _begin, _cur = _begin;
-	for ( ; _begin != _end; ++_begin )
+	back_insert_functor( _containerType& _conttype ) : _cont{ _conttype } {};
+	void operator()( typename _containerType::value_type _item ) const
 	{
-		if ( *_begin == _delimiter )
-		{
-			if ( _first != _cur )
-			{
-				_output = std::basic_string<typename _inputIterator::value_type>( _first, _cur );
-			}
-			_first = ++_cur;
-		}
-		else
-		{
-			++_cur;
-		}
+		_cont.push_back( _item );
 	}
-	if ( _first != _cur )
-	{
-		_output = std::basic_string<typename _inputIterator::value_type>( _first, _cur );
-	}
-}
 
-template < typename _inputIterator, typename _outputIterator >
-void each_slice_push( _inputIterator _begin, _inputIterator _end, typename _inputIterator::value_type* _delimiter, _outputIterator _output )
-{
-	size_t indexCurrent = 0, stringSize = 0;
-	while ( _delimiter[ stringSize ] != 0 )
-	{
-		++stringSize;
-	};
+private:
 
-	if ( stringSize > 1 )
-	{
-		--stringSize;
-		_inputIterator _first = _begin, _final = _begin, _last, _fromPattern;
-		for ( ; _begin != _end; ++_begin )
-		{
-			if ( *_begin == _delimiter[ indexCurrent ] )
-			{
-				_last = _fromPattern = _begin;
-				while ( ++_fromPattern != _end && *_fromPattern == _delimiter[ ++indexCurrent ] )
-				{
-					if ( indexCurrent == stringSize )
-					{
-						if ( _first != _last )
-						{
-							_output = std::basic_string<typename _inputIterator::value_type>( _first, _last );
-						}
-						_begin = _fromPattern++;
-						_final = _first = _fromPattern;
-						break;
-					}
-				};
-				indexCurrent = 0;
-			}
-		}
+	_containerType& _cont;
 
-		// last slice
-		if ( _final != _end )
-		{
-			_output = std::basic_string<typename _inputIterator::value_type>( _final, _end );
-		}
-	}
-	else if ( stringSize == 1 )
-	{
-		// only one symbol in delimiter, use simplier variant
-		each_slice_push( _begin, _end, _delimiter[ 0 ], _output );
-	}
-	/*
-	else
-	{
-	// only one slice, no delimiters supplied
-	_function( std::basic_string<typename _inputIterator::value_type>( _begin, _end ));
-	}
-	*/
-}
+};
 
 template < typename _inputIterator, typename _unaryFunction >
 void each_slice( _inputIterator _begin, _inputIterator _end, typename _inputIterator::value_type _delimiter, const _unaryFunction& _function )
@@ -227,8 +162,7 @@ int main(int argc, char* argv[])
 
 	std::cout << std::endl << "char + outputIterator (' '):" << std::endl;
 	std::vector< std::string > slices;
-	std::back_insert_iterator<std::vector< std::string >>  output( slices );
-	each_slice_push( test.begin(), test.end(), ' ', output ); // <- char to wchar implict convertsion is possible
+	each_slice( test.begin(), test.end(), ' ', back_insert_functor<std::vector< std::string >>( slices ) );
 
 	for_each( slices.begin(), slices.end(), []( const std::string& tag )
 	{
@@ -248,8 +182,7 @@ int main(int argc, char* argv[])
 
 	std::cout << std::endl << "wchar + outputIterator (' '):" << std::endl;
 	std::vector< std::wstring > wslices;
-	std::back_insert_iterator<std::vector< std::wstring >> woutput( wslices );
-	each_slice_push( wtest.begin(), wtest.end(), L' ', woutput );
+	each_slice( wtest.begin(), wtest.end(), L' ', back_insert_functor<std::vector< std::wstring >>( wslices ) );
 
 	for_each( wslices.begin(), wslices.end(), []( const std::wstring& tag )
 	{
@@ -292,8 +225,7 @@ int main(int argc, char* argv[])
 
 	std::cout << std::endl << "multi char push (source):" << std::endl;
 	std::vector< std::string > mslices;
-	std::back_insert_iterator<std::vector< std::string >> moutput( mslices );
-	each_slice_push( test.begin(), test.end(), "source", moutput );
+	each_slice( test.begin(), test.end(), "source", back_insert_functor<std::vector< std::string >>( mslices ) );
 
 	for_each( mslices.begin(), mslices.end(), []( std::string& tag )
 	{
@@ -313,6 +245,18 @@ int main(int argc, char* argv[])
 		++count;
 	} );
 	std::cout << "total tags: " << count << std::endl;
+
+
+	std::cout << std::endl << "any slice push (c or _):" << std::endl;
+	std::vector< std::string > maslices;
+	any_slice( test.begin(), test.end(), "c_", back_insert_functor<std::vector< std::string >>( maslices ) );
+
+	for_each( maslices.begin(), maslices.end(), []( std::string& tag )
+	{
+		std::cout << tag << std::endl;
+	} );
+	std::cout << "total tags: " << maslices.size() << std::endl;
+
 
 #pragma endregion
 
